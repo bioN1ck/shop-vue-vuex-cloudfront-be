@@ -1,5 +1,6 @@
+import { Product } from '../types/api-types';
 
-const PRODUCT_LIST = [
+const PRODUCT_LIST: Product[] = [
     {
         count: 4,
         description: '[MOCK_SERV] Short Product Description1',
@@ -59,11 +60,11 @@ const PRODUCT_LIST = [
 ];
 export default class ProductService {
 
-    async getAllProducts(): Promise<any> {
+    async getAllProducts(): Promise<Product[]> {
         return PRODUCT_LIST;
     }
 
-    async getProductById(id: string) {
+    async getProductById(id: string): Promise<Product | undefined> {
         return PRODUCT_LIST.find(product => product.id === id);
     }
 }

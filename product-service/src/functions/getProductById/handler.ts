@@ -1,12 +1,15 @@
 import { formatJSONResponse } from '@libs/api-gateway';
 import { middyfy } from '@libs/lambda';
+import createError from 'http-errors';
 
 import todoService from '../../services';
-import { FunctionResponse } from '../../types/product.model';
 
-export const getProductById: FunctionResponse  = async (event) => {
+export const getProductById  = async (event) => {
   const id = event.pathParameters.id;
   const product = await todoService.getProductById(id);
+  if (!product) {
+    throw new createError.NotFound('Product not found');
+  }
   return formatJSONResponse({ product });
 };
 
