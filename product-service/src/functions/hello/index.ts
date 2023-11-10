@@ -8,6 +8,7 @@ export default {
       http: {
         method: 'post',
         path: 'hello',
+        bodyType: 'HelloDTO',
         request: {
           schemas: {
             'application/json': schema,
