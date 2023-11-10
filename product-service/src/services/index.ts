@@ -1,5 +1,10 @@
-import ProductService from './product.service';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 
-const productService = new ProductService();
+import { ProductService } from './product.service';
 
-export default productService;
+const dynamoDBClient = new DynamoDBClient({ region: 'eu-west-1' });
+const documentClient = DynamoDBDocumentClient.from(dynamoDBClient);
+
+export const productService = new ProductService(documentClient);
+

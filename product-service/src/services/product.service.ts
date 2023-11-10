@@ -1,70 +1,100 @@
-import { Product } from '../types/api-types';
+import {
+    CreateProductDTO,
+    Product,
+    ProductWithStock,
+    Stock
+} from '../types/api-types';
+import { v4 as uuid } from 'uuid';
+import {
+    DynamoDBDocumentClient,
+    ScanCommand,
+    TransactGetCommand,
+    TransactWriteCommand,
+} from '@aws-sdk/lib-dynamodb';
 
-const PRODUCT_LIST: Product[] = [
-    {
-        count: 4,
-        description: '[MOCK_SERV] Short Product Description1',
-        id: '7567ec4b-b10c-48c5-9345-fc73c48a80aa',
-        price: 2.4,
-        title: '[MOCK_SERV] ProductOne'
-    },
-    {
-        count: 6,
-        description: '[MOCK_SERV] Short Product Description3',
-        id: '7567ec4b-b10c-48c5-9345-fc73c48a80a0',
-        price: 10,
-        title: '[MOCK_SERV] ProductNew'
-    },
-    {
-        count: 7,
-        description: '[MOCK_SERV] Short Product Description2',
-        id: '7567ec4b-b10c-48c5-9345-fc73c48a80a2',
-        price: 23,
-        title: '[MOCK_SERV] ProductTop'
-    },
-    {
-        count: 12,
-        description: '[MOCK_SERV] Short Product Description7',
-        id: '7567ec4b-b10c-48c5-9345-fc73c48a80a1',
-        price: 15,
-        title: '[MOCK_SERV] ProductTitle'
-    },
-    {
-        count: 7,
-        description: '[MOCK_SERV] Short Product Description2',
-        id: '7567ec4b-b10c-48c5-9345-fc73c48a80a3',
-        price: 23,
-        title: '[MOCK_SERV] Product'
-    },
-    {
-        count: 8,
-        description: '[MOCK_SERV] Short Product Description4',
-        id: '7567ec4b-b10c-48c5-9345-fc73348a80a1',
-        price: 15,
-        title: '[MOCK_SERV] ProductTest'
-    },
-    {
-        count: 2,
-        description: '[MOCK_SERV] Short Product Descriptio1',
-        id: '7567ec4b-b10c-48c5-9445-fc73c48a80a2',
-        price: 23,
-        title: '[MOCK_SERV] Product2'
-    },
-    {
-        count: 3,
-        description: '[MOCK_SERV] Short Product Description7',
-        id: '7567ec4b-b10c-45c5-9345-fc73c48a80a1',
-        price: 15,
-        title: '[MOCK_SERV] ProductName'
-    }
-];
-export default class ProductService {
 
-    async getAllProducts(): Promise<Product[]> {
-        return PRODUCT_LIST;
+export class ProductService {
+
+    private readonly productsTableName = process.env.PRODUCTS_TABLE_NAME;
+    private readonly stocksTableName = process.env.STOCKS_TABLE_NAME;
+
+    constructor(private readonly docClient: DynamoDBDocumentClient) {}
+
+    async createProduct({ title, description, price, count }: CreateProductDTO): Promise<void> {
+        const productId = uuid();
+        const command = new TransactWriteCommand({
+            TransactItems: [
+                {
+                    Put: {
+                        TableName: this.productsTableName,
+                        Item: {
+                            id: productId,
+                            title,
+                            description,
+                            price,
+                        },
+                    },
+                },
+                {
+                    Put: {
+                        TableName: this.stocksTableName,
+                        Item: {
+                            productId,
+                            count,
+                        },
+                    },
+                },
+            ],
+        });
+
+        await this.docClient.send(command);
     }
 
-    async getProductById(id: string): Promise<Product | undefined> {
-        return PRODUCT_LIST.find(product => product.id === id);
+    async getAllProducts(): Promise<ProductWithStock[]> {
+        const productsCommand = new ScanCommand({ TableName: this.productsTableName });
+        const { Items: products } = await this.docClient.send(productsCommand);
+
+        const stocksCommand = new ScanCommand({ TableName: this.stocksTableName });
+        const { Items: stocks } = await this.docClient.send(stocksCommand);
+
+        return (products as Product[]).map(product => ({
+            ...product,
+            count: (stocks as Stock[]).find(s => s.productId === product.id)?.count ?? 0,
+        }));
+    }
+
+    async getProductById(id: string): Promise<ProductWithStock> {
+        const command = new TransactGetCommand({
+            TransactItems: [
+                {
+                    Get: {
+                        Key: { id },
+                        TableName: this.productsTableName,
+                    },
+                },
+                {
+                    Get: {
+                        Key: { productId: id },
+                        TableName: this.stocksTableName,
+                    },
+                },
+            ]
+        });
+
+        const {
+            Responses: [
+                { Item: product },
+                { Item: stock },
+            ]
+        } = await this.docClient.send(command);
+
+        if (!product || !stock) {
+            throw new Error('No records');
+        }
+
+        return {
+            ...(product as Product),
+            count: (stock as Stock).count,
+        };
     }
 }
