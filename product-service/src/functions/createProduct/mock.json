@@ -1,0 +1,12 @@
+{
+  "version": "2.0",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "{\"title\": \"Test product\", \"description\": \"Test description\", \"price\": \"42\", \"count\": \"42\"}",
+  "requestContext": {
+    "http": {
+      "method": "post"
+    }
+  }
+}

@@ -1,11 +1,17 @@
 import { formatJSONResponse } from '@libs/api-gateway';
 import { middyfy } from '@libs/lambda';
-import todoService from '../../services';
+
+import { productService } from '../../services';
 import { FunctionResponse } from '../../types/product.model';
 
 export const getProductsList: FunctionResponse = async () => {
-  const products = await todoService.getAllProducts();
-  return formatJSONResponse({ products });
+  console.log('getProductList');
+  try {
+    const data = await productService.getAllProducts();
+    return formatJSONResponse(200, { data });
+  } catch (e) {
+    return formatJSONResponse(500, { message: 'Something went wrong...' });
+  }
 };
 
 export const main = middyfy(getProductsList);

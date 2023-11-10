@@ -1,6 +1,12 @@
 {
+  "version": "2.0",
   "headers": {},
   "pathParameters": {
-    "id": "7567ec4b-b10c-48c5-9345-fc73c48a80a1"
+    "id": "33414d7c-d447-4068-8cfa-cd0df5c653c0"
+  },
+  "requestContext": {
+    "http": {
+      "method": "get"
+    }
   }
 }

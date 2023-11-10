@@ -5,7 +5,8 @@ import { middyfy } from '@libs/lambda';
 import schema from './schema';
 
 const hello: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event) => {
-  return formatJSONResponse({
+  console.log('hello event: ', event);
+  return formatJSONResponse(200, {
     message: `Hello ${event.body.name}, welcome to the exciting Serverless world!`,
     event,
   });

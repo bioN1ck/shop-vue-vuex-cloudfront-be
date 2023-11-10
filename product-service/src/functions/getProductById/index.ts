@@ -1,5 +1,5 @@
 import { handlerPath } from '@libs/handler-resolver';
-import {GroupTag} from "../../types/product.model";
+import { GroupTag } from "../../types/product.model";
 
 export default {
   handler: `${handlerPath(__dirname)}/handler.main`,

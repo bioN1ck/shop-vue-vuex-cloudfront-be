@@ -4,25 +4,40 @@
   "description": "Serverless aws-nodejs-typescript template",
   "main": "serverless.ts",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "generate-products": "ts-node db/table-populate.ts",
+    "deploy-all": "sls deploy",
+    "----- createProduct -----": "echo createProduct; exit 1",
+    "deploy:createProduct": "sls deploy function -f createProduct",
+    "invoke:createProduct": "sls invoke -f createProduct -p src/functions/createProduct/mock.json",
+    "invoke:createProduct:local": "sls invoke -f createProduct -p src/functions/createProduct/mock.json local",
+    "----- getProductsList -----": "echo getProductsList; exit 1",
+    "deploy:getProductsList": "sls deploy function -f getProductList",
+    "invoke:getProductsList": "sls invoke -f getProductsList -p src/functions/getProductsList/mock.json",
+    "invoke:getProductsList:local": "sls invoke local -f getProductsList -p src/functions/getProductsList/mock.json",
+    "----- getProductById -----": "echo getProductById; exit 1",
+    "deploy:getProductById": "sls deploy function -f getProductById",
+    "invoke:getProductById": "sls invoke -f getProductById -p src/functions/getProductById/mock.json",
+    "invoke:getProductById:local": "sls invoke local -f getProductById -p src/functions/getProductById/mock.json"
   },
   "engines": {
-    "node": ">=14.15.0"
+    "node": ">=18"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.441.0",
+    "@aws-sdk/lib-dynamodb": "^3.445.0",
     "@middy/core": "^3.4.0",
     "@middy/http-cors": "^4.6.5",
-    "@middy/http-error-handler": "^4.6.5",
     "@middy/http-json-body-parser": "^3.4.0",
-    "http-errors": "^2.0.0"
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
     "@serverless/typescript": "^3.0.0",
     "@types/aws-lambda": "^8.10.71",
-    "@types/http-errors": "^2.0.3",
     "@types/jest": "^29.5.6",
     "@types/node": "^14.14.25",
+    "@types/uuid": "^9.0.6",
     "esbuild": "^0.14.11",
     "jest": "^29.7.0",
     "json-schema-to-ts": "^1.5.0",
